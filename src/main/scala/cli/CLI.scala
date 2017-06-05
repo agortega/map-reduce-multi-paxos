@@ -1,8 +1,10 @@
-package mapreduce
+package cli
 
 /**
   * Created by AngelOrtega on 6/4/2017.
   */
-trait Mapper {
+trait CLI {
   def map = ???
+  def reduce = ???
+  def replicate = ???
 }
