@@ -5,4 +5,5 @@ package paxos
   */
 trait Acceptor {
   def accept = ???
+
 }
