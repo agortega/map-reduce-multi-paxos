@@ -1,3 +1,4 @@
+#TODO: Sample temp file, change to run scala procedures
 
 .PHONY: all
 all: bin
