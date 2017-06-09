@@ -25,18 +25,36 @@ object SimplerServer extends App{
   debugln("Starting my server...")
 
 
-  val server = ServerSocketChannel.open()
-  server.socket().bind(new InetSocketAddress(5000)) //TODO: Verify nonbinding with replicated servers
-  server.configureBlocking(false)
-  reset {
-    
+//  val server = ServerSocketChannel.open()
+  /**
+    * Port to listen on
+    */
+//  server.socket().bind(new InetSocketAddress(5000)) //TODO: Verify nonbinding with replicated servers
+//  server.configureBlocking(false)
+
+//  import scala.collection.concurrent.
+//  import scala.collection.concurrent.BlockingQueue
+  import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue}
+
+  /**
+    * event queue
+    */
+  val queue = new LinkedBlockingQueue[Unit => Any]
+  while (true) reset {
+    val server = new java.net.ServerSocket(5001)
+    val socket = server.accept()
+    server.close()
+
+    suspend()
+//      buffer = byteBuffer
+
   }
+  def suspend() = shift { k: (Unit => Unit) => queue = k :: queue}
+
 //  reset
 //  val selector =
 
-
 //  val system = listen ==> connect ==> process ==> reply
-
 //  val pipeline = request ==>  ==>
 
 }
