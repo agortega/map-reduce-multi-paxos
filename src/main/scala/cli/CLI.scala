@@ -10,19 +10,18 @@ object CLI extends App with DataProcessingAPI{
   val argList = args.toList
 
   type CommandMap = Map[Symbol, Any]
-  //type MapCommand = Seq[String]
   def nextCommand(map: CommandMap, tokenList: List[String]) : CommandMap = {
     //def isCommand(userArg: String) = (userArg(0) == "-")
     tokenList match {
       case Nil => map
-      //case "map" :: value :: tail => nextCommand(map ++ Map('filename -> value.toString
-      case "map" ::  tail => nextCommand(map ++ Map('filename -> string), tokenList.tail)
-      case option :: tail =>  { println("ERROR" + option)
+      case "map" :: filename :: tail => nextCommand(map ++ Map('map -> filename), tokenList.drop(1).tail)
+//      case List("reduce", files) => nextCommand(map ++ Map('reduce -> files))
+      case option :: tail =>   println("ERROR" + option)
         sys.exit(1)
-      }
+
     }
   }
 
   val commands = nextCommand(Map(), argList)
-  println(commands)
+  println(commands('map))
 }
