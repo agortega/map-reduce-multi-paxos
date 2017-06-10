@@ -17,3 +17,7 @@ Multicast
         * learner
     * distributed state machine
     
+
+Some todo's
+- push-up-count-latch
+- *multicast* (not needed as specified by Ryan)
