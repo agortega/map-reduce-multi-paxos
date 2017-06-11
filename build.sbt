@@ -14,9 +14,11 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-remote" % akkaVersion,
   "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion,
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
-  "ch.qos.logback"    %   "logback-classic"  % "1.1.3"        % Test,
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
   "com.typesafe.akka" %%  "akka-testkit"     % akkaVersion    % Test,
   "org.scalatest"     %%  "scalatest"        % "3.0.1"        % Test
+
 )
 
 parallelExecution in Test := false
