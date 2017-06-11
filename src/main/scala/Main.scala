@@ -1,14 +1,17 @@
 import actors.EchoActor
 import akka.actor.{Actor, ActorSystem, Address, Deploy, Props}
 import akka.remote._
-import akka.routing.RandomPool
+import akka.routing.{FromConfig, RandomPool}
 import com.typesafe.config.ConfigFactory
 //import akka.testkit.{ AkkaSpec, ImplicitSender }
 
 
+
+
 object Main extends App {
-  val _system = ActorSystem("Router")
-  val randomRouter = _system.actorOf(Props[EchoActor].withRouter(RandomPool(10)), name = "RandomPoolActor")
+  // conf, must be in filepath for calling class
+  val system = ActorSystem.create("Router", ConfigFactory.load().getConfig("RouterExample"))
+  val randomRouter = system.actorOf(Props[EchoActor].withRouter(FromConfig()), name = "RandomPoolActor")
   1 to 10 foreach {
     i => randomRouter ! i
   }
@@ -29,6 +32,10 @@ object Main extends App {
 
 class SampleActor extends Actor {
   def receive = { case _ => sender() ! self }
+}
+
+class Deprecated {
+  def randomRouter(_system: ActorSystem = ActorSystem("Router")) = _system.actorOf(Props[EchoActor].withRouter(RandomPool(1)), name = "RandomPoolActor")
 }
 
 //def remoteConfig(port: Int) = ConfigFactory.parseString(s"""
