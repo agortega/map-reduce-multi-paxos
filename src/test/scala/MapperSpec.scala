@@ -22,7 +22,7 @@ class MapperSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSen
     s"all $nbrOfMappers mappers" must {
       s"receive disjoint set of words from a word file" in {
 
-        val mappers = (for (i <- 0 until nbrOfMappers) yield system.actorOf(Props[SimpleClusterListener], name = s"mapper-$i")).toSet
+        val mappers = (for (i <- 0 until nbrOfMappers) yield system.actorOf(Props[BackendMappersListener], name = s"mapper-$i")).toSet
 
 
       }

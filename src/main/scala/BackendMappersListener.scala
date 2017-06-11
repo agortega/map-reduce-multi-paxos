@@ -4,17 +4,16 @@ import akka.actor.ActorLogging
 import akka.actor.Actor
 import com.typesafe.scalalogging.LazyLogging
 
-class SimpleClusterListener extends Actor with LazyLogging {
+class BackendMappersListener extends Actor with LazyLogging {
 
   val cluster = Cluster(context.system)
 
   // subscribe to cluster changes, re-subscribe when restart
-  override def preStart(): Unit = {
-    cluster.subscribe(self, classOf[MemberEvent], classOf[UnreachableMember])
-  }
+  override def preStart(): Unit = {cluster.subscribe(self, classOf[MemberEvent])}
   override def postStop(): Unit = cluster.unsubscribe(self)
 
   def receive = {
+    case msg: String => logger.info(s"A Backend Cluster node just received a message!")
 //    case state: CurrentClusterState =>
 //      log.info("Current members: {}", state.members.mkString(", "))
 //    case MemberUp(member) =>
@@ -24,7 +23,7 @@ class SimpleClusterListener extends Actor with LazyLogging {
 //    case MemberRemoved(member, previousStatus) =>
 //      log.info("Member is Removed: {} after {}",
 //        member.address, previousStatus)
-    case _: MemberEvent => logger.debug("This is very convenient ;-)")
+    case _: MemberEvent => logger.debug(s"MapID: ${this.cluster.selfUniqueAddress}This is very convenient ;-)")
     // ignore
   }
 }
