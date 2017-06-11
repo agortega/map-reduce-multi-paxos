@@ -15,17 +15,24 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion,
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-  "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "com.typesafe.akka" %%  "akka-testkit"     % akkaVersion    % Test,
-  "org.scalatest"     %%  "scalatest"        % "3.0.1"        % Test
+  "ch.qos.logback" % "logback-classic" % "1.1.7"
 
 )
 
-parallelExecution in Test := false
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-slf4j"        % akkaVersion    % Test,
+  "com.typesafe.akka" %%  "akka-testkit"     % akkaVersion    % Test,
+  "org.scalatest"     %%  "scalatest"        % "3.0.1"        % Test,
+  "ch.qos.logback"    %   "logback-classic"  % "1.1.7"        % Test,
+  "com.typesafe.akka" %%  "akka-testkit"     % akkaVersion    % Test
+)
 
+// show elapsed time
+testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oD")
 
-addCommandAlias("node-1", "runMain src.main.scala.ClusterAwareRouterApp node-1")
-addCommandAlias("node-2", "runMain src.main.scala.ClusterAwareRouterApp node-2")
+//parallelExecution in Test := false
+//addCommandAlias("node-1", "runMain src.main.scala.ClusterAwareRouterApp node-1")
+//addCommandAlias("node-2", "runMain src.main.scala.ClusterAwareRouterApp node-2")
 
 
         
