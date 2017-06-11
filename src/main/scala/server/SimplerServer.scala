@@ -39,7 +39,7 @@ object SimplerServer extends App{
   /**
     * event queue
     */
-  type Task = () => Any
+  type Task = Unit => Unit
   val queue = new LinkedBlockingQueue[Task]
   while (true) reset {
     val server = new java.net.ServerSocket(5001)
@@ -47,10 +47,22 @@ object SimplerServer extends App{
     server.close()
 
     suspend()
-//      buffer = byteBuffer
+    val ois = new java.io.ObjectInputStream(socket.getInputStream)
+    val request = ois.readObject().toString
+
+    Thread.sleep(250)
+
+    val response = "response(" + request + ")"
+    val oos = new java.io.ObjectOutputStream(socket.getOutputStream)
+
+    oos.writeObject(response)
+    oos.close()
+
+    ois.close()
+    socket.close()
 
   }
-  def suspend() = shift { k: (Task) => queue = k :: queue}
+  def suspend() = shift { k: (Task) => queue.put(k)}
 
 //  reset
 //  val selector =
