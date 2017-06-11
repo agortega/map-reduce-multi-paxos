@@ -1,0 +1,8 @@
+cat
+dog
+hi
+who
+are
+dog
+dog
+cat

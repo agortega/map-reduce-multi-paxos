@@ -1,4 +1,6 @@
+import mapreduce.SimpleMasterWorker
+
 object Main extends App {
-  val x = 10
-  println(x)
+  val master = new SimpleMasterWorker
+  master.splitFile()
 }
