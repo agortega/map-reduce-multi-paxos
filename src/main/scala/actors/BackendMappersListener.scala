@@ -6,6 +6,8 @@ import akka.cluster.ClusterEvent._
 import cli.{MapMessage1, MapMessage2, ReduceMessage}
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.util.Try
+
 class BackendMappersListener extends Actor with LazyLogging {
 
   val cluster = Cluster(context.system)
@@ -25,8 +27,20 @@ class BackendMappersListener extends Actor with LazyLogging {
     case MapMessage2(msg) => {
 
     }
-    case ReduceMessage(msg1: List[String], msg2: List[String]) => {
+    case ReduceMessage(msg1: String, msg2: String) => {
+      var mapDrain2: Map[String, Int] = Map.empty //immutable
+      var map: Map[String, Int] = Map.empty //immutable
+      val noWhiteSpace = msg1.replaceAll(",\\b", "\n")
+      val linesForWords = noWhiteSpace.split("\n")
+      for (line <- linesForWords) {
+        val wordKey = line.split("\\s+")
+        map += wordKey(0) -> Try(wordKey(1).toInt).getOrElse(0)
+      }
 
+      val orderedBufferMap = map.toSeq.sortBy(-_._2)
+
+      mapDrain2 = map ++ mapDrain2.map { case (k, v) => k -> (v + map.getOrElse(k, 0)) }
+      sender ! mapDrain2
     }
 
     //    case state: CurrentClusterState =>

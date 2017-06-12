@@ -26,7 +26,7 @@ import scala.util.Try
 
 case class MapMessage1(msg1: List[String])
 case class MapMessage2(msg2: List[String])
-case class ReduceMessage(msg1: List[String], msg2: List[String])
+case class ReduceMessage(msg1: String, msg2: String)
 //case class MapMessage2(msg2: List[String])
 
 
@@ -64,7 +64,6 @@ object Main extends App {
       val words = Source.fromFile(filename).getLines().mkString
       val wordStream: Stream[String] = Source.fromFile(new File(filename)).getLines.toStream
       val wordStream2: Stream[String]  = scala.io.Source.fromFile(new File(filename)).getLines.toStream
-//      val words2 = scala.io.Source.fromFile(new File(filename)).getLines.toStream.foldLeft(Map.empty[String,Int])
       val words1 = words.split("\\s+").toArray
       val splitFileLength = words1.length/2
       val groupedWords = words1.grouped(words1.length/2).toList
@@ -84,15 +83,35 @@ object Main extends App {
 //      words1.foreach(println)
 
     }
+    case Array("reduce", files @ _*) => {
+      var mapDrain: Map[String, Int] = Map.empty //immutable
+      var map: Map[String, Int] = Map.empty //immutable
+      for (filename <- files) {
+        val mappedWords1 = Source.fromFile(filename).getLines().mkString
+        val noWhiteSpace = mappedWords1.replaceAll(",\\b", "\n")
+        val linesForWords = noWhiteSpace.split("\n")
+        for (line <- linesForWords) {
+          val wordKey = line.split("\\s+")
+          map += wordKey(0) -> Try(wordKey(1).toInt).getOrElse(0)
+        }
+
+        val orderedBufferMap = map.toSeq.sortBy(-_._2)
+
+        mapDrain = map ++ mapDrain.map { case (k, v) => k -> (v + map.getOrElse(k, 0)) }
+
+      }
+      val orderUniqueMap = mapDrain.toSeq.sortBy(-_._2)
+      println(orderUniqueMap)
+
+    }
     case _ => println("error")
-//    case s@ List("reduce") :: _ :: _"=> {
-//      println(s.last)
+//    case s@ List("reduce", _*)=> {
+//      s.last
 //      ???
-  }
+//  }
 //      _.foreach()
 //      val words = Source.fromFile(filename).getLines().mkString
 
-//      map1 |+| map2
     //    case List("replicate", _*) => ???
     //    case List("stop") => ???
     //    case List("resume") => ???
