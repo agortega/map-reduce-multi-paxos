@@ -1,6 +1,7 @@
 package actors
 
 import akka.actor.{Actor, ActorLogging}
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Created by angel on 6/11/17.
