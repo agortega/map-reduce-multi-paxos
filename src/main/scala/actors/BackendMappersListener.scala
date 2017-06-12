@@ -19,10 +19,12 @@ class BackendMappersListener extends Actor with LazyLogging {
   def receive = {
     case msg: String => logger.info(s"msg")
     case map: Array[String] => logger.info(s"Map Function2")
+
     case MapMessage1(msg) => {
       val mappedByUniqueWords = msg.groupBy(identity).mapValues(_.size).toSeq.sortBy(- _._2)
       sender ! mappedByUniqueWords
-      logger.info(mappedByUniqueWords.mkString)
+      logger.info("Successfully Mapped objects: " +
+        "" + mappedByUniqueWords.mkString)
     }
     case MapMessage2(msg) => {
 
@@ -41,6 +43,7 @@ class BackendMappersListener extends Actor with LazyLogging {
 
       mapDrain2 = map ++ mapDrain2.map { case (k, v) => k -> (v + map.getOrElse(k, 0)) }
       sender ! mapDrain2
+      logger.info("Successfully Reduced objects: " + mapDrain2.mkString)
     }
 
     //    case state: CurrentClusterState =>
@@ -52,7 +55,7 @@ class BackendMappersListener extends Actor with LazyLogging {
 //    case MemberRemoved(member, previousStatus) =>
 //      log.info("Member is Removed: {} after {}",
 //        member.address, previousStatus)
-//    case _: MemberEvent => logger.debug(s"MapID: ${this.cluster.selfUniqueAddress}This is very convenient ;-)")
+//    case _: MemberEvent => logger.debug(s"MapID: ${this.cluster.selfUniqueAddress}Map is Running")
     // ignore
   }
 }

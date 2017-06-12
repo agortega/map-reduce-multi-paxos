@@ -24,8 +24,8 @@ import scala.collection.parallel.immutable
 import scala.io.Source
 import scala.util.Try
 
-case class MapMessage1(msg1: List[String])
-case class MapMessage2(msg2: List[String])
+case class MapMessage1(msg1: Array[String])
+case class MapMessage2(msg2: Array[String])
 case class ReduceMessage(msg1: String, msg2: String)
 //case class MapMessage2(msg2: List[String])
 
@@ -37,17 +37,17 @@ object Main extends App {
   val mapperPort1 = 5002
   val mapperPort2 = 5003
   // TODO: PUT
-//  val config1 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$mapperPort1").
-//    withFallback(ConfigFactory.parseString("akka.cluster.roles = [mappersbackend]")).
-//    withFallback(ConfigFactory.load("mapcluster.conf"))
-//  var system1 = ActorSystem("MappersCluster", config1)
-//  val mappers1 = system1.actorOf(Props[BackendMappersListener], name = "mapper1")
+  val config1 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$mapperPort1").
+    withFallback(ConfigFactory.parseString("akka.cluster.roles = [mappersbackend]")).
+    withFallback(ConfigFactory.load("mapcluster.conf"))
+  var system1 = ActorSystem("MappersCluster", config1)
+  val mappers1 = system1.actorOf(Props[BackendMappersListener], name = "mapper1")
 
-//  val config2 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$mapperPort2").
-//    withFallback(ConfigFactory.parseString("akka.cluster.roles = [mappersbackend]")).
-//    withFallback(ConfigFactory.load("mapcluster.conf"))
-//  var system2 = ActorSystem("MappersCluster", config2)
-//  val mappers2 = system1.actorOf(Props[BackendMappersListener], name = "mapper2")
+  val config2 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$mapperPort2").
+    withFallback(ConfigFactory.parseString("akka.cluster.roles = [mappersbackend]")).
+    withFallback(ConfigFactory.load("mapcluster.conf"))
+  var system2 = ActorSystem("MappersCluster", config2)
+  val mappers2 = system1.actorOf(Props[BackendMappersListener], name = "mapper2")
 
   // Create an actor that handles cluster domain events
   //      SimpleStart
@@ -74,12 +74,16 @@ object Main extends App {
       val unique2 = mapper2Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(- _._2)
 //      val unique: Int = mapper1Words.groupBy(identity).mapValues(_.size)
 
-      println(unique1)
-//      Thread.sleep(1000)
+      println("File1 Unique: " +unique1)
+      println(unique2)
+
+      Thread.sleep(1000)
 //      val reponseFromMapper1 = mappers1 ! msg1
 
-//      mapper
-//      println(words1.length)
+      mappers1 ! MapMessage1(mapper1Words)
+      mappers2 ! MapMessage1(mapper2Words)
+
+//      println(words1.le)
 //      words1.foreach(println)
 
     }
