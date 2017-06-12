@@ -1,11 +1,15 @@
 package actors
 
+import java.io.{BufferedWriter, File, FileWriter}
+import java.util.concurrent.atomic.AtomicInteger
+
 import akka.actor.{Actor, ActorLogging}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
-import cli.{MapMessage1, MapMessage2, ReduceMessage, ReduceMessage2}
+import cli._
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.io.Source
 import scala.util.Try
 
 class BackendMappersListener extends Actor with LazyLogging {
@@ -62,8 +66,10 @@ class BackendMappersListener extends Actor with LazyLogging {
 
       val orderUniqueMap = mapDrain2.toSeq.sortBy(-_._2)
       sender ! orderUniqueMap
-      logger.info("Successfully Reduced objects: " + orderUniqueMap)
+      logger.info(s"PORT${this.cluster.state}\tSuccessfully Reduced objects: " + orderUniqueMap)
     }
+
+
 
     //    case state: CurrentClusterState =>
 //      log.info("Current members: {}", state.members.mkString(", "))
