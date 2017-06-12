@@ -3,7 +3,7 @@ package actors
 import akka.actor.{Actor, ActorLogging}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
-import cli.MapMessage1
+import cli.{MapMessage1, MapMessage2, ReduceMessage}
 import com.typesafe.scalalogging.LazyLogging
 
 class BackendMappersListener extends Actor with LazyLogging {
@@ -22,7 +22,14 @@ class BackendMappersListener extends Actor with LazyLogging {
       sender ! mappedByUniqueWords
       logger.info(mappedByUniqueWords.mkString)
     }
-//    case state: CurrentClusterState =>
+    case MapMessage2(msg) => {
+
+    }
+    case ReduceMessage(msg1: List[String], msg2: List[String]) => {
+
+    }
+
+    //    case state: CurrentClusterState =>
 //      log.info("Current members: {}", state.members.mkString(", "))
 //    case MemberUp(member) =>
 //      log.info("Member is Up: {}", member.address)

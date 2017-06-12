@@ -26,6 +26,9 @@ import scala.util.Try
 
 case class MapMessage1(msg1: List[String])
 case class MapMessage2(msg2: List[String])
+case class ReduceMessage(msg1: List[String], msg2: List[String])
+//case class MapMessage2(msg2: List[String])
+
 
 object Main extends App {
   val commands: Array[String] = args
@@ -69,9 +72,9 @@ object Main extends App {
       val mapper2Words = groupedWords.last
 //      val msg1 = MapMessage1(mapper1Words)
       val unique1 = mapper1Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(- _._2)
-      val unique2 = mapper1Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(- _._2)
+      val unique2 = mapper2Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(- _._2)
 //      val unique: Int = mapper1Words.groupBy(identity).mapValues(_.size)
-      
+
       println(unique1)
 //      Thread.sleep(1000)
 //      val reponseFromMapper1 = mappers1 ! msg1
@@ -82,6 +85,14 @@ object Main extends App {
 
     }
     case _ => println("error")
+//    case s@ List("reduce") :: _ :: _"=> {
+//      println(s.last)
+//      ???
+  }
+//      _.foreach()
+//      val words = Source.fromFile(filename).getLines().mkString
+
+//      map1 |+| map2
     //    case List("replicate", _*) => ???
     //    case List("stop") => ???
     //    case List("resume") => ???
