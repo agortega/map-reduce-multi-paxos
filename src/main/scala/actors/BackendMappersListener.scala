@@ -3,7 +3,7 @@ package actors
 import akka.actor.{Actor, ActorLogging}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
-import cli.{MapMessage1, MapMessage2, ReduceMessage}
+import cli.{MapMessage1, MapMessage2, ReduceMessage, ReduceMessage2}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.Try
@@ -44,6 +44,25 @@ class BackendMappersListener extends Actor with LazyLogging {
       mapDrain2 = map ++ mapDrain2.map { case (k, v) => k -> (v + map.getOrElse(k, 0)) }
       sender ! mapDrain2
       logger.info("Successfully Reduced objects: " + mapDrain2.mkString)
+    }
+
+    case ReduceMessage2(files: List[String]) => {
+      var mapDrain2: Map[String, Int] = Map.empty //immutable
+      var map: Map[String, Int] = Map.empty //immutable
+      for (file <- files) {
+        val linesForWords = file.split("\n")
+        for (line <- linesForWords) {
+          val wordKey = line.split("\\s+")
+          map += wordKey(0) -> Try(wordKey(1).toInt).getOrElse(0)
+        }
+        val orderedBufferMap = map.toSeq.sortBy(-_._2)
+        mapDrain2 = map ++ mapDrain2.map { case (k, v) => k -> (v + map.getOrElse(k, 0)) }
+
+      }
+
+      val orderUniqueMap = mapDrain2.toSeq.sortBy(-_._2)
+      sender ! orderUniqueMap
+      logger.info("Successfully Reduced objects: " + orderUniqueMap)
     }
 
     //    case state: CurrentClusterState =>

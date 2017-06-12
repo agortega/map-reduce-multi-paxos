@@ -27,6 +27,8 @@ import scala.util.Try
 case class MapMessage1(msg1: Array[String])
 case class MapMessage2(msg2: Array[String])
 case class ReduceMessage(msg1: String, msg2: String)
+case class ReduceMessage2(files: List[String])
+
 //case class MapMessage2(msg2: List[String])
 
 
@@ -36,6 +38,8 @@ object Main extends App {
   val port = 5001
   val mapperPort1 = 5002
   val mapperPort2 = 5003
+  val reducerPort1 = 5004
+
   // TODO: PUT
   val config1 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$mapperPort1").
     withFallback(ConfigFactory.parseString("akka.cluster.roles = [mappersbackend]")).
@@ -48,6 +52,13 @@ object Main extends App {
     withFallback(ConfigFactory.load("mapcluster.conf"))
   var system2 = ActorSystem("MappersCluster", config2)
   val mappers2 = system1.actorOf(Props[BackendMappersListener], name = "mapper2")
+
+
+  val config3 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$reducerPort1").
+    withFallback(ConfigFactory.parseString("akka.cluster.roles = [reducerbackend]")).
+    withFallback(ConfigFactory.load("mapcluster.conf"))
+  var system3 = ActorSystem("MappersCluster", config3)
+  val reducer1 = system1.actorOf(Props[BackendMappersListener], name = "reducer1")
 
   // Create an actor that handles cluster domain events
   //      SimpleStart
@@ -88,11 +99,13 @@ object Main extends App {
 
     }
     case Array("reduce", files @ _*) => {
+      var fileReadList = List[String]()
       var mapDrain: Map[String, Int] = Map.empty //immutable
       var map: Map[String, Int] = Map.empty //immutable
       for (filename <- files) {
-        val mappedWords1 = Source.fromFile(filename).getLines().mkString
+        val mappedWords1: String = Source.fromFile(filename).getLines().mkString
         val noWhiteSpace = mappedWords1.replaceAll(",\\b", "\n")
+        fileReadList = fileReadList ++ List[String](noWhiteSpace)
         val linesForWords = noWhiteSpace.split("\n")
         for (line <- linesForWords) {
           val wordKey = line.split("\\s+")
@@ -106,6 +119,7 @@ object Main extends App {
       }
       val orderUniqueMap = mapDrain.toSeq.sortBy(-_._2)
       println(orderUniqueMap)
+      reducer1 ! ReduceMessage2(fileReadList)
 
     }
     case _ => println("error")
