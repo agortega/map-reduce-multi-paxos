@@ -1,7 +1,8 @@
+package actors
+
+import akka.actor.Actor
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
-import akka.actor.ActorLogging
-import akka.actor.Actor
 import com.typesafe.scalalogging.LazyLogging
 
 class BackendMappersListener extends Actor with LazyLogging {
