@@ -75,13 +75,13 @@ object Main extends App {
     withFallback(ConfigFactory.parseString("akka.cluster.roles = [paxosbackend]")).
     withFallback(ConfigFactory.load("mapcluster.conf"))
   var system5 = ActorSystem("PaxosCluster", config5)
-  val paxosNode2 = system4.actorOf(Props(new PaxosListener(2,paxosPort1)), name = "paxosnode2")
+  val paxosNode2 = system5.actorOf(Props(new PaxosListener(2,paxosPort1)), name = "paxosnode2")
 
   val config6 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$paxosPort3").
     withFallback(ConfigFactory.parseString("akka.cluster.roles = [paxosbackend]")).
     withFallback(ConfigFactory.load("mapcluster.conf"))
   var system6 = ActorSystem("PaxosCluster", config6)
-  val paxosNode3 = system4.actorOf(Props(new PaxosListener(3,paxosPort1)), name = "paxosnode3")
+  val paxosNode3 = system6.actorOf(Props(new PaxosListener(3,paxosPort1)), name = "paxosnode3")
 
   /**
     * Data Processing Calls

@@ -24,9 +24,11 @@ class PaxosListener(nodeID: Int, port: Int) extends Actor with LazyLogging {
   override def receive: Receive = {
     case ReplicateMessage1(filename: String, msg1: Array[Byte]) => {
       val byteArray = msg1
-      val bufferOut = new BufferedOutputStream(new FileOutputStream(filename + s"copy_nodeID=${this.ID}"))
+      val fileDescription = filename + s"copy_nodeID=${this.ID}"
+      val bufferOut = new BufferedOutputStream(new FileOutputStream(fileDescription))
       bufferOut.write(byteArray)
-
+      sender ! fileDescription
+      logger.info(s"PORT${this.cluster.selfUniqueAddress}\tSuccessfully Created File Log: " + fileDescription)
     }
   }
 
