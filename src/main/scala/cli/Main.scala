@@ -56,7 +56,7 @@ object Main extends App {
     withFallback(ConfigFactory.parseString("akka.cluster.roles = [mappersbackend]")).
     withFallback(ConfigFactory.load("mapcluster.conf"))
   var system2 = ActorSystem("MappersCluster", config2)
-  val mappers2 = system1.actorOf(Props[BackendMappersListener], name = "mapper2")
+  val mappers2 = system2.actorOf(Props[BackendMappersListener], name = "mapper2")
 
 
   val config3 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$reducerPort1").
