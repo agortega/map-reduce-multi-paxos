@@ -10,12 +10,12 @@ import akka.util.ByteString
 
 import scala.concurrent._
 import scala.concurrent.duration._
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 
 import akka.stream.scaladsl.Tcp.{IncomingConnection, ServerBinding}
 import java.net.InetSocketAddress
 
-import actors.BackendMappersListener
+import actors.{BackendMappersListener, PaxosListener}
 import com.typesafe.config.ConfigFactory
 
 import scala.collection.immutable.ListMap
@@ -28,6 +28,8 @@ case class MapMessage1(msg1: Array[String])
 case class MapMessage2(msg2: Array[String])
 case class ReduceMessage(msg1: String, msg2: String)
 case class ReduceMessage2(files: List[String])
+case class ReplicateMessage1(filename: String, msg1: Array[Byte])
+
 
 //case class MapMessage2(msg2: List[String])
 
@@ -39,6 +41,9 @@ object Main extends App {
   val mapperPort1 = 5002
   val mapperPort2 = 5003
   val reducerPort1 = 5004
+  val paxosPort1 = 5005
+  val paxosPort2 = 5006
+  val paxosPort3 = 5007
 
   // TODO: PUT
   val config1 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$mapperPort1").
@@ -57,45 +62,53 @@ object Main extends App {
   val config3 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$reducerPort1").
     withFallback(ConfigFactory.parseString("akka.cluster.roles = [reducerbackend]")).
     withFallback(ConfigFactory.load("mapcluster.conf"))
-  var system3 = ActorSystem("MappersCluster", config3)
-  val reducer1 = system1.actorOf(Props[BackendMappersListener], name = "reducer1")
+  var system3 = ActorSystem("ReducersCluster", config3)
+  val reducer1 = system3.actorOf(Props[BackendMappersListener], name = "reducer1")
 
-  // Create an actor that handles cluster domain events
-  //      SimpleStart
-  //      val app2 = ActorSystem("MyApp2",
-  //        config.getConfig("myapp2").withOnlyPath("akka").withFallback(config))
-  //      val actorSystem = ActorSystem("MappersCluster")
-  //      actorSystem.actorOf(Props[BackendMappersListener]) ! "start"
+  val config4 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$paxosPort1").
+    withFallback(ConfigFactory.parseString("akka.cluster.roles = [paxosbackend]")).
+    withFallback(ConfigFactory.load("mapcluster.conf"))
+  var system4 = ActorSystem("PaxosCluster", config4)
+  val paxosNode1 = system4.actorOf(Props(new PaxosListener(1,paxosPort1)), name = "paxosnode1")
+
+  val config5 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$paxosPort2").
+    withFallback(ConfigFactory.parseString("akka.cluster.roles = [paxosbackend]")).
+    withFallback(ConfigFactory.load("mapcluster.conf"))
+  var system5 = ActorSystem("PaxosCluster", config5)
+  val paxosNode2 = system5.actorOf(Props(new PaxosListener(2,paxosPort1)), name = "paxosnode2")
+
+  val config6 = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$paxosPort3").
+    withFallback(ConfigFactory.parseString("akka.cluster.roles = [paxosbackend]")).
+    withFallback(ConfigFactory.load("mapcluster.conf"))
+  var system6 = ActorSystem("PaxosCluster", config6)
+  val paxosNode3 = system6.actorOf(Props(new PaxosListener(3,paxosPort1)), name = "paxosnode3")
+
   /**
     * Data Processing Calls
 //    */
   commands match {
     case Array("map", filename: String) => {
       //      val commands = args
-      val words = Source.fromFile(filename).getLines().mkString
-      val wordStream: Stream[String] = Source.fromFile(new File(filename)).getLines.toStream
-      val wordStream2: Stream[String]  = scala.io.Source.fromFile(new File(filename)).getLines.toStream
-      val words1 = words.split("\\s+").toArray
-      val splitFileLength = words1.length/2
-      val groupedWords = words1.grouped(words1.length/2).toList
+      val wordsAsBigString = Source.fromFile(filename).getLines().mkString
+      val wordsTokens = wordsAsBigString.split("\\s+").toArray
+
+      val groupedWords = wordsTokens.grouped(wordsTokens.length/2).toList
+
       val mapper1Words = groupedWords.head
       val mapper2Words = groupedWords.last
-//      val msg1 = MapMessage1(mapper1Words)
+
+      Thread.sleep(1000)
+      mappers1 ! MapMessage1(mapper1Words)
+      mappers2 ! MapMessage1(mapper2Words)
+
       val unique1 = mapper1Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(- _._2)
       val unique2 = mapper2Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(- _._2)
-//      val unique: Int = mapper1Words.groupBy(identity).mapValues(_.size)
 
       println("File1 Unique: " +unique1)
       println(unique2)
 
-      Thread.sleep(1000)
-//      val reponseFromMapper1 = mappers1 ! msg1
 
-      mappers1 ! MapMessage1(mapper1Words)
-      mappers2 ! MapMessage1(mapper2Words)
 
-//      println(words1.le)
-//      words1.foreach(println)
 
     }
     case Array("reduce", files @ _*) => {
@@ -122,6 +135,28 @@ object Main extends App {
       reducer1 ! ReduceMessage2(fileReadList)
 
     }
+
+    case Array("replicate", filename: String) => {
+      //      val commands = args
+      val wordsAsBigString = Source.fromFile(filename).getLines().mkString
+      val wordsTokens = wordsAsBigString.split("\\s+").toArray
+      val byteArray: Array[Byte] = Files.readAllBytes(Paths.get(filename))
+
+      Thread.sleep(1000)
+      paxosNode1 ! ReplicateMessage1(filename, byteArray)
+      paxosNode2 ! ReplicateMessage1(filename, byteArray)
+      paxosNode3 ! ReplicateMessage1(filename, byteArray)
+
+//      val unique1 = mapper1Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(-_._2)
+//      val unique2 = mapper2Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(-_._2)
+
+//      println("File1 Unique: " + unique1)
+//      println(unique2)
+      println("FIN - Used Paxos Command")
+    }
+
+
+
     case _ => println("error")
 //    case s@ List("reduce", _*)=> {
 //      s.last
