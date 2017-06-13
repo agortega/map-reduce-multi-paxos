@@ -104,11 +104,7 @@ object Main extends App {
       val unique1 = mapper1Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(- _._2)
       val unique2 = mapper2Words.groupBy(identity).mapValues(_.length).toSeq.sortBy(- _._2)
 
-      println("File1 Unique: " +unique1)
-      println(unique2)
-
-
-
+      println(s"Reading $filename\nmapped to::\t$unique1")
 
     }
     case Array("reduce", files @ _*) => {
@@ -131,7 +127,7 @@ object Main extends App {
 
       }
       val orderUniqueMap = mapDrain.toSeq.sortBy(-_._2)
-      println(orderUniqueMap)
+      println(s"Reduced to $orderUniqueMap")
       reducer1 ! ReduceMessage2(fileReadList)
 
     }
@@ -152,7 +148,7 @@ object Main extends App {
 
 //      println("File1 Unique: " + unique1)
 //      println(unique2)
-      println("FIN - Used Paxos Command")
+      println("FIN - Used replicate command on Paxos")
     }
 
 
